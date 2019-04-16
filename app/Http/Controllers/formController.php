@@ -6,11 +6,33 @@ use Illuminate\Http\Request;
 use App\Form;
 use App\Product;
 use App\Product_order;
-use\DB;
+use DB;
 
 
 class formController extends Controller
 {
+
+
+/**
+* Create a new controller instance.
+*
+*@return void
+*/
+public function __construct(){
+
+  $this->middleware('web', ['except' => ['index', 'successful']]);
+}
+
+  //  Main Products Site Starts Here//
+
+
+public function successful(){
+ 
+      return view("form.successful");
+               
+    }
+
+
     public function index(){
      $products = DB::table('products')
      ->where('format','Audio')
@@ -21,16 +43,23 @@ class formController extends Controller
      ->get();
 
       $ceflixTunes = DB::table('products')
-     ->where('title','ceflixSubscription')
+      ->where('title','ceflix Yearly Subscription')
+      ->orwhere('title','ceflix Quarterly Subscription')
+      ->orwhere('title','ceflix Monthly Subscription')
      ->get();
 
-     return view('form.index', [ 'products' => $products, 'videos' => $videos, 'ceflixTunes' => $ceflixTunes,]); 
+      $ceflixBulk = DB::table('products')
+      ->where('title','ceflix Yearly Subscription Bulk')
+      ->orwhere('title','ceflix Quarterly Subscription Bulk')
+      ->orwhere('title','ceflix Monthly Subscription Bulk')
+     ->get();
 
-
-
+     return view('form.index', [ 'products' => $products, 'videos' => $videos, 'ceflixTunes' => $ceflixTunes, 'ceflixBulk' => $ceflixBulk]); 
 
     }
-    
+
+
+
 
     public function form(Request $request){
         $this->validate($request, [
@@ -44,80 +73,111 @@ class formController extends Controller
 
         $currency = $request->get("currency");
 
-         switch ($currency) {
-
-            case 'USD':
-              $audioUnit = 3;
-              $videoUnit = 6;
-              $ceflixQuaterly = 5;
-              $ceflixYearly = 16;
-              $ceflixMonthly = 2;
-              $symbol = "$";
-              $currency = "USD";
-              // $amount = "amountbox";
-              break;
-             
-
-           case 'GBP':
-              $audioUnit = 3;
-              $videoUnit = 5 ;
-              $ceflixMonthly =2 ;
-              $ceflixQuaterly =3;
-              $ceflixYearly =12 ;
-              $symbol = "£";
-              $currency = "GBP";
-              // $amount = "amountbox";
-              break;
 
 
-           case 'EUR':
-              $audioUnit = 3;
-              $videoUnit = 6 ;
-              $ceflixMonthly = 2;
-              $ceflixQuaterly = 4;
-              $ceflixYearly = 14 ;
-              $symbol = "€";
-              $currency = "EUR";
-              // $amount = "amountbox";
-              break;
+//  If currency is no NGN, then redirect to paypal with payment details
+        // if($currency!= 'NGN'){
+        //   return redirect()->to('/paypal');
+        //   exit;
+        // }
+
+    switch ($currency) {
+    
+    case 'USD':
+      $audioUnit = 3;
+      $videoUnit = 6;
+      $ceflixQuaterly = 5;
+      $ceflixYearly = 16;
+      $ceflixMonthly = 2;     
+      $ceflixMonthlyBulk = 200;
+      $ceflixQuaterlyBulk = 250;
+      $ceflixYearlyBulk = 800;
+      $symbol = "$";
+      $currency = "USD";
+      // $amount = "amountbox";
+      break;
+     
+
+   case 'GBP':
+      $audioUnit = 3;
+      $videoUnit = 5 ;
+      $ceflixMonthly =2 ;
+      $ceflixQuaterly =3;
+      $ceflixYearly =12 ;
+
+      $ceflixMonthlyBulk = 200;
+      $ceflixQuaterlyBulk = 150;
+      $ceflixYearlyBulk = 600;
+      $symbol = "£";
+      $currency = "GBP";
+      // $amount = "amountbox";
+      break;
+
+
+   case 'EUR':
+      $audioUnit = 3;
+      $videoUnit = 6 ;
+      $ceflixMonthly = 2;
+      $ceflixQuaterly = 4;
+      $ceflixYearly = 14 ;
+
+      $ceflixMonthlyBulk = 200;
+      $ceflixQuaterlyBulk = 200;
+      $ceflixYearlyBulk = 700;
+      $symbol = "€";
+      $currency = "EUR";
+      // $amount = "amountbox";
+      break;
 
 
 
-           case 'ZAR':
-              $audioUnit = 13  ;
-              $videoUnit = 25;
-              $ceflixMonthly = 19;
-              $ceflixQuaterly = 531;
-              $ceflixYearly = 208;
-              $symbol = "R";
-              $currency = "ZAR";
-              // $amount = "amountbox";
-              break;
+   case 'ZAR':
+      $audioUnit = 13  ;
+      $videoUnit = 25;
+      $ceflixMonthly = 19;
+      $ceflixQuaterly = 531;
+      $ceflixYearly = 208;
+
+      $ceflixMonthlyBulk = 1900;
+      $ceflixQuaterlyBulk = 10400;
+      $ceflixYearlyBulk = 26550;
+      $symbol = "R";
+      $currency = "ZAR";
+      // $amount = "amountbox";
+      break;
 
 
 
-           case 'NGN':
-              $audioUnit = 200;
-              $videoUnit = 400;
-              $ceflixMonthly = 500;
-              $ceflixQuaterly = 1400;
-              $ceflixYearly= 5500;
-              $symbol ="₦";
-              $currency = "NGN";
-              // $amount = "amountbox";
-              break;
-            
+   case 'NGN':
+      $audioUnit = 200;
+      $videoUnit = 400;
+      $ceflixMonthly = 500;
+      $ceflixQuaterly = 1400;
+      $ceflixYearly= 5500;
 
-            default:
-              $audioUnit = 200;
-              $videoUnit = 400;
-              $ceflixMonthly = 500;
-              $ceflixQuaterly = 1400;
-              $ceflixYearly = 5500;   
-              $symbol ="₦";
-              $currency = "NGN";
-              // $amount = "amountbox";
-              break;
+      $ceflixMonthlyBulk = 50000;
+      $ceflixQuaterlyBulk = 750000;
+      $ceflixYearlyBulk = 165000;
+      $symbol ="₦";
+      $currency = "NGN";
+      // $amount = "amountbox";
+      break;
+    
+
+    default:
+      $audioUnit = 200;
+      $videoUnit = 400;
+      $ceflixMonthly = 500;
+      $ceflixQuaterly = 1400;
+      $ceflixYearly = 5500;  
+
+      $ceflixMonthlyBulk = 50000;
+      $ceflixQuaterlyBulk = 750000;
+      $ceflixYearlyBulk = 165000; 
+      $symbol ="₦";
+      $currency = "NGN";
+      // $amount = "amountbox";
+      break;
             }
 
              $amount = 0;
@@ -147,6 +207,15 @@ class formController extends Controller
              }
              if($product->title == "ceflixSubscription"){
                      $amount =  $amount + $ceflixYearly;
+            }      
+             if($product->title == "ceflixSubscription"){
+                     $amount =  $amount + $ceflixMonthlyBulk;
+            }      
+             if($product->title == "ceflixSubscription"){
+             $amount =  $amount + $ceflixQuarterlyBulk;
+             }      
+             if($product->title == "ceflixSubscription"){
+            $amount =  $amount + $ceflixYearlyBulk;
          }
 
        }
@@ -209,9 +278,10 @@ class formController extends Controller
              $form->currency  = $request->input('currency');
              $form->amountbox =$amount;
              $form->status ="pending";
+  
              // $form->ceflixTunes = implode(",",$request->input('ceflixTunes'));
              $form->save();
-       // dd();
+       //dd($form);
 
         // comment out this line if you want to redirect the user to the payment page
         //print_r($tranx);
@@ -220,6 +290,18 @@ class formController extends Controller
         // redirect to page so User can pay
         // uncomment this line to allow the user redirect to the payment page
         //header('Location: ' . $tranx['data']['authorization_url']);
+
+           if($request->input('currency') != "NGN")  {
+
+              //store variables in a session and redirect to paypal form
+
+             session(['amount'=>$amount,'reference'=>$tranx['data']['reference'],'currency'=>$request->input('currency')]);
+
+             return redirect("/paypal");
+             exit;
+
+           }
+
 
          return redirect($tranx['data']['authorization_url']);
 
@@ -295,6 +377,25 @@ class formController extends Controller
 
 
         }
+
+    public function cancel(){
+
+     return redirect("/index")->with("response","Your transaction was cancelled")->with("type","danger");
+
+
+  }
+
+  public function success(){
+
+
+    return view('form.successful');
+
+     //return redirect("/index")->with("response","Your transaction was cancelled")->with("type","danger");
+
+
+  }
+
+
 
 
 
